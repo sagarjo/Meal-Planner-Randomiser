@@ -11,10 +11,16 @@ conn = st.connection("gsheets", type=GSheetsConnection)
 
 # --- 2. LOAD DATA ---
 @st.cache_data(ttl=60) # Refreshes every minute
+# Temporary modification to debug the connection
 def get_data():
-    options_df = conn.read(worksheet="Options")
-    plan_df = conn.read(worksheet="CurrentPlan")
-    return options_df, plan_df
+    try:
+        # Setting ttl=0 forces a fresh read every time
+        options_df = conn.read(worksheet="Options", ttl=0)
+        plan_df = conn.read(worksheet="CurrentPlan", ttl=0)
+        return options_df, plan_df
+    except Exception as e:
+        st.error(f"Spreadsheet Error: {e}")
+        return pd.DataFrame(), pd.DataFrame()
 
 options_df, plan_df = get_data()
 
